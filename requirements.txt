@@ -1,5 +1,6 @@
 absl-py==0.3.0
 bleach==1.5.0
+doc2vec==0.0.1
 h5py==2.8.0
 html5lib==0.9999999
 Keras==2.2.2
@@ -9,8 +10,10 @@ Markdown==2.6.11
 nltk==3.3
 numpy==1.15.0
 pandas==0.23.4
+progressbar2==3.38.0
 protobuf==3.6.0
 python-dateutil==2.7.3
+python-utils==2.3.0
 pytz==2018.5
 PyYAML==3.13
 scipy==1.1.0

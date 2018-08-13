@@ -19,6 +19,7 @@ setup(
     long_description=read('README.md'),
     entry_points = {
         'console_scripts': [
+            'doc2vec=doc2vec.doc2vec:main',
             'embeddings-to-tsv=composer2vec.script.embeddings_to_tsv:main',
         ],
     }

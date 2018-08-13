@@ -3,9 +3,9 @@ import itertools
 
 import nltk
 
-from data import batch, doc
-from model import dm
-import vocab
+from doc2vec.data import batch, doc
+from doc2vec.model import dm
+from doc2vec import vocab
 
 
 nltk.download('punkt')
@@ -34,7 +34,7 @@ def _parse_args():
     return parser.parse_args()
 
 
-def _main():
+def main():
     args = _parse_args()
 
     tokens_by_doc_id = doc.tokens_by_doc_id(args.path)
@@ -74,7 +74,3 @@ def _main():
 
     if args.save_doc_embeddings:
         m.save_doc_embeddings(args.save_doc_embeddings)
-
-
-if __name__ == '__main__':
-    _main()
