@@ -21,10 +21,18 @@ def _parse_args():
     parser.add_argument('path', help='Path to documents directory')
                         
     parser.add_argument('--save', help='Path to save model')
+    parser.add_argument('--save_period', help='Save model every n epochs')
     parser.add_argument('--save_vocab', help='Path to save vocab file')
-    parser.add_argument('--save_doc_embeddings', help='Path to save doc embeddings file')
+    parser.add_argument('--save_doc_embeddings',
+                        help='Path to save doc embeddings file')
+    parser.add_argument('--save_doc_embeddings_period',
+                        help='Save doc embeddings every n epochs')
+
     parser.add_argument('--load', help='Path to load model')
     parser.add_argument('--load_vocab', help='Path to load vocab file')
+
+    parser.add_argument('--early_stopping_patience',
+                        help='Stop after no loss decrease for n epochs')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--train', dest='train', action='store_true')
@@ -67,10 +75,18 @@ def main():
                     _DEFAULT_WINDOW_SIZE,
                     v.size))
 
-        m.train(all_data)
+        history = m.train(
+                all_data,
+                early_stopping_patience=args.early_stopping_patience,
+                save_path=args.save,
+                save_period=args.save_period,
+                save_doc_embeddings=args.save_doc_embeddings,
+                save_doc_embeddings_period=args.save_doc_embeddings_period)
 
     if args.save:
-        m.save(args.save)
+        m.save(
+            args.save.format({'epoch': len(history)}))
 
     if args.save_doc_embeddings:
-        m.save_doc_embeddings(args.save_doc_embeddings)
+        m.save_doc_embeddings(
+            args.save_doc_embeddings.format({'epoch': len(history)}))

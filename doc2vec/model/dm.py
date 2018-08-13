@@ -1,15 +1,39 @@
 import logging
 
 import h5py
-from keras.callbacks import EarlyStopping
+from keras.callbacks import CallBack, EarlyStopping, ModelCheckpoint
 from keras.layers import Average, Concatenate, Dense, Embedding, Input, Lambda
 from keras.models import Model, load_model
 from keras.optimizers import SGD
+import numpy as np
 import tensorflow as tf
 
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
+
+class SaveDocEmbeddings(Callback):
+
+    def on_epoch_end(self, epoch, logs=None):
+        if epoch % self.params['period'] != 0:
+            return
+
+        path = self.params['path'].format({'epoch': epoch})
+        embeddings = _doc_embeddings_from_model(self.model)
+        _write_doc_embeddings(embeddings, path)
+
+
+def _doc_embeddings_from_model(keras_model):
+    # TODO: Name the embedding layer and then look it up by key instead
+    # of relying on ordering.
+    return np.array(keras_model.layers[2].get_weights()[0])
+
+
+def _write_doc_embeddings(doc_embeddings, path):
+    logger.info('Saving doc embeddings to %s', path)
+    with h5py.File(path, 'w') as f:
+        f.create_dataset("doc_embeddings", data=doc_embeddings)
 
 
 def _split(window_size):
@@ -37,9 +61,7 @@ class DM(object):
 
     @property
     def doc_embeddings(self):
-        # TODO: Name the embedding layer and then look it up by key instead
-        # of relying on ordering.
-        return np.array(self._model.layers[2].get_weights()[0])
+        return _doc_embeddings_from_model(self._model)
 
     def build(self):
         sequence_input = Input(shape=(self._window_size,))
@@ -65,12 +87,26 @@ class DM(object):
                             loss='categorical_crossentropy',
                             metrics=['categorical_accuracy'])
 
-    def train(self, generator, steps_per_epoch=10000, epochs=250):
+    def train(self, generator,
+              steps_per_epoch=10000, epochs=250,
+              early_stopping_patience=None,
+              save_path=None, save_period=None,
+              save_doc_embeddings_path=None, save_doc_embeddings_period=None):
+
+        callbacks=[]
+        if early_stopping_patience:
+            callbacks.append(EarlyStopping(monitor='loss',
+                                           patience=early_stopping_patience))
+        if save_path and save_period:
+            callbacks.append(ModelCheckpoint(save_path,
+                                             period=save_period))
+        if save_doc_embeddings_path and save_doc_embeddings_period:
+            callbacks.append(SaveDocEmbeddings(save_doc_embeddings_path,
+                                               period=save_doc_embeddings_period))
+
         history = self._model.fit_generator(
 	    generator,
-	    callbacks=[
-		EarlyStopping(monitor='loss', patience=10)
-	      ],
+	    callbacks=callbacks,
 	    steps_per_epoch=steps_per_epoch,
 	    epochs=epochs)
   
@@ -81,9 +117,7 @@ class DM(object):
         self._model.save(path)
 
     def save_doc_embeddings(self, path):
-        logger.info('Saving doc embeddings to %s', path)
-        with h5py.File(path, 'w') as f:
-            f.create_dataset("doc_embeddings", data=self.doc_embeddings)
+        _write_doc_embeddings(self.doc_embeddings, path)
 
     def load(self, path):
         logger.info('Loading model from %s', path)
