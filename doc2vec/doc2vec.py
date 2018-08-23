@@ -11,8 +11,6 @@ from doc2vec import vocab
 nltk.download('punkt')
 
 
-_DEFAULT_WINDOW_SIZE = 8
-_DEFAULT_VOCAB_SIZE = 10000
 
 
 def _parse_args():
@@ -34,6 +32,27 @@ def _parse_args():
     parser.add_argument('--early_stopping_patience',
                         help='Stop after no loss decrease for n epochs')
 
+    parser.add_argument('--vocab_size', default=vocab.DEFAULT_SIZE,
+                        help='Max vocabulary size; ignored if loading from file')
+    parser.add_argument('--vocab_rare_threshold',
+                        default=vocab.DEFAULT_RARE_THRESHOLD,
+                        help=('Words less frequent than this threshold '
+                              'will be considered unknown'))
+
+    parser.add_argument('--window_size',
+                        default=dm.DEFAULT_WINDOW_SIZE,
+                        help='Context window size')
+    parser.add_argument('--embedding_size',
+                        default=dm.DEFAULT_EMBEDDING_SIZE,
+                        help='Word and document embedding size')
+
+    parser.add_argument('--num_epochs',
+                        default=dm.DEFAULT_NUM_EPOCHS,
+                        help='Number of epochs to train for')
+    parser.add_argument('--steps_per_epoch',
+                        default=dm.DEFAULT_STEPS_PER_EPOCH,
+                        help='Number of samples per epoch')
+
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--train', dest='train', action='store_true')
     group.add_argument('--no-train', dest='train', action='store_false')
@@ -54,13 +73,14 @@ def main():
         v.load(args.load_vocab)
     else:
         all_tokens = list(itertools.chain.from_iterable(tokens_by_doc_id.values()))
-        v.build(all_tokens, max_size=_DEFAULT_VOCAB_SIZE)
+        v.build(all_tokens, max_size=args.vocab_size)
         if args.save_vocab:
             v.save(args.save_vocab)
 
     token_ids_by_doc_id = {d: v.to_ids(t) for d, t in tokens_by_doc_id.items()}
 
-    m = dm.DM(_DEFAULT_WINDOW_SIZE, v.size, num_docs)
+    m = dm.DM(args.window_size, v.size, num_docs,
+              embedding_size=args.embedding_size)
 
     if args.load:
         m.load(args.load) 
@@ -72,11 +92,13 @@ def main():
         all_data = batch.batch(
                 batch.data_generator(
                     token_ids_by_doc_id,
-                    _DEFAULT_WINDOW_SIZE,
+                    args.window_size,
                     v.size))
 
         history = m.train(
                 all_data,
+                epochs=args.num_epochs,
+                steps_per_epoch=args.steps_per_epoch,
                 early_stopping_patience=args.early_stopping_patience,
                 save_path=args.save,
                 save_period=args.save_period,

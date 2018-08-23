@@ -13,6 +13,12 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+DEFAULT_WINDOW_SIZE = 8
+DEFAULT_EMBEDDING_SIZE = 300
+DEFAULT_NUM_EPOCHS = 250
+DEFAULT_STEPS_PER_EPOCH = 10000
+
+
 class SaveDocEmbeddings(Callback):
 
     def on_epoch_end(self, epoch, logs=None):
@@ -52,10 +58,13 @@ def _squeeze():
 
 class DM(object):
 
-    def __init__(self, window_size, vocab_size, num_docs):
+    def __init__(self, window_size, vocab_size, num_docs,
+                 embedding_size=DEFAULT_EMBEDDING_SIZE):
         self._window_size = window_size
         self._vocab_size = vocab_size
         self._num_docs = num_docs
+
+        self._embedding_size=embedding_size
 
         self._model = None
 
@@ -67,8 +76,12 @@ class DM(object):
         sequence_input = Input(shape=(self._window_size,))
         doc_input = Input(shape=(1,))
       
-        embedded_sequence = Embedding(input_dim=self._vocab_size, output_dim=300, input_length=self._window_size)(sequence_input)
-        embedded_doc = Embedding(input_dim=self._num_docs, output_dim=300, input_length=1)(doc_input)
+        embedded_sequence = Embedding(input_dim=self._vocab_size,
+                                      output_dim=self._embedding_size,
+                                      input_length=self._window_size)(sequence_input)
+        embedded_doc = Embedding(input_dim=self._num_docs,
+                                 output_dim=self._embedding_size,
+                                 input_length=1)(doc_input)
       
         embedded = Concatenate(axis=1)([embedded_doc, embedded_sequence])
         split = Lambda(_split(self._window_size))(embedded)
@@ -88,7 +101,8 @@ class DM(object):
                             metrics=['categorical_accuracy'])
 
     def train(self, generator,
-              steps_per_epoch=10000, epochs=250,
+              steps_per_epoch=DEFAULT_STEPS_PER_EPOCH,
+              epochs=DEFAULT_NUM_EPOCHS,
               early_stopping_patience=None,
               save_path=None, save_period=None,
               save_doc_embeddings_path=None, save_doc_embeddings_period=None):

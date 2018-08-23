@@ -7,6 +7,10 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
+DEFAULT_SIZE = 10000
+DEFAULT_RARE_THRESHOLD = 0
+
+
 _UNKNOWN = '<unk>'
 
 
@@ -23,7 +27,9 @@ class Vocabulary(object):
     def __contains__(self, token):
         return token in self._vocab
 
-    def build(self, tokens, max_size=None, rare_threshold=0):
+    def build(self, tokens,
+              max_size=DEFAULT_SIZE,
+              rare_threshold=DEFAULT_RARE_THRESHOLD):
         logger.info('Building vocab')
 
         def _unk(token, count):
