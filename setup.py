@@ -20,7 +20,7 @@ setup(
     entry_points = {
         'console_scripts': [
             'doc2vec=doc2vec.doc2vec:main',
-            'embeddings-to-tsv=composer2vec.script.embeddings_to_tsv:main',
+            'embeddings-to-tsv=doc2vec.script.embeddings_to_tsv:main',
         ],
     }
 )
