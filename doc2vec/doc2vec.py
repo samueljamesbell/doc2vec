@@ -1,15 +1,25 @@
 import argparse
 import itertools
 
-from doc2vec.data import batch, doc
-from doc2vec.model import dm
+from doc2vec.data import batch_dm, batch_dbow, doc
+from doc2vec.model import dm, dbow
 from doc2vec import vocab
+
+
+MODEL_TYPES = {
+    'dm': (dm.DM, batch_dm.data_generator, batch_dm.batch),
+    'dbow': (dbow.DBOW, batch_dbow.data_generator, batch_dbow.batch)
+}
 
 
 def _parse_args():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('path', help='Path to documents directory')
+
+    parser.add_argument('--model', default='dm',
+                        values=list(MODEL_TYPES.keys()),
+                        help='Which model to use')
                         
     parser.add_argument('--save', help='Path to save model')
     parser.add_argument('--save_period', help='Save model every n epochs')
@@ -72,8 +82,10 @@ def main():
 
     token_ids_by_doc_id = {d: v.to_ids(t) for d, t in tokens_by_doc_id.items()}
 
-    m = dm.DM(args.window_size, v.size, num_docs,
-              embedding_size=args.embedding_size)
+    model_class, data_generator, batcher = MODEL_TYPES[args.model]
+
+    m = model_class(args.window_size, v.size, num_docs,
+                    embedding_size=args.embedding_size)
 
     if args.load:
         m.load(args.load) 
@@ -82,8 +94,8 @@ def main():
         m.compile()
 
     if args.train:
-        all_data = batch.batch(
-                batch.data_generator(
+        all_data = batcher(
+                data_generator(
                     token_ids_by_doc_id,
                     args.window_size,
                     v.size))
