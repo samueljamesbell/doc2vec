@@ -2,7 +2,7 @@ import argparse
 import itertools
 
 from doc2vec.data import batch_dm, batch_dbow, doc
-from doc2vec.model import dm, dbow
+from doc2vec.model import dm, dbow, model
 from doc2vec import vocab
 
 
@@ -18,7 +18,7 @@ def _parse_args():
     parser.add_argument('path', help='Path to documents directory')
 
     parser.add_argument('--model', default='dm',
-                        values=list(MODEL_TYPES.keys()),
+                        choices=list(MODEL_TYPES.keys()),
                         help='Which model to use')
                         
     parser.add_argument('--save', help='Path to save model')
@@ -43,17 +43,17 @@ def _parse_args():
                               'will be considered unknown'))
 
     parser.add_argument('--window_size',
-                        default=dm.DEFAULT_WINDOW_SIZE,
+                        default=model.DEFAULT_WINDOW_SIZE,
                         help='Context window size')
     parser.add_argument('--embedding_size',
-                        default=dm.DEFAULT_EMBEDDING_SIZE,
+                        default=model.DEFAULT_EMBEDDING_SIZE,
                         help='Word and document embedding size')
 
     parser.add_argument('--num_epochs',
-                        default=dm.DEFAULT_NUM_EPOCHS,
+                        default=model.DEFAULT_NUM_EPOCHS,
                         help='Number of epochs to train for')
     parser.add_argument('--steps_per_epoch',
-                        default=dm.DEFAULT_STEPS_PER_EPOCH,
+                        default=model.DEFAULT_STEPS_PER_EPOCH,
                         help='Number of samples per epoch')
 
     group = parser.add_mutually_exclusive_group()
