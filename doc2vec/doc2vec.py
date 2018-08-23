@@ -1,16 +1,9 @@
 import argparse
 import itertools
 
-import nltk
-
 from doc2vec.data import batch, doc
 from doc2vec.model import dm
 from doc2vec import vocab
-
-
-nltk.download('punkt')
-
-
 
 
 def _parse_args():

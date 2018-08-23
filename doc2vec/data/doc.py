@@ -1,6 +1,7 @@
 import logging
 import re
 
+import nltk
 from nltk.tokenize import word_tokenize
 
 
@@ -28,4 +29,5 @@ def tokens(doc):
 
 
 def tokens_by_doc_id(directory):
+    nltk.download('punkt')
     return {doc_id: tokens(doc) for doc_id, doc in docs_by_id(directory)}
