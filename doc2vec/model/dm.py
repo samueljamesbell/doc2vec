@@ -2,21 +2,7 @@ from keras.layers import Average, Concatenate, Dense, Embedding, Input, Lambda
 from keras.models import Model
 import tensorflow as tf
 
-from doc2vec.model import model
-
-
-def _split(window_size):
-    def _lambda(tensor):
-        import tensorflow as tf
-        return tf.split(tensor, window_size + 1, axis=1)
-    return _lambda
-
-
-def _squeeze(axis=-1):
-    def _lambda(tensor):
-        import tensorflow as tf
-        return tf.squeeze(tensor, axis=axis)
-    return _lambda
+from doc2vec.model import lambdas, model
 
 
 class DM(model.Doc2VecModel):
@@ -34,9 +20,9 @@ class DM(model.Doc2VecModel):
                                  input_length=1)(doc_input)
       
         embedded = Concatenate(axis=1)([embedded_doc, embedded_sequence])
-        split = Lambda(_split(self._window_size))(embedded)
+        split = Lambda(lambdas.split(self._window_size))(embedded)
         averaged = Average()(split)
-        squeezed = Lambda(_squeeze(axis=1))(averaged)
+        squeezed = Lambda(lambdas.squeeze(axis=1))(averaged)
       
         softmax = Dense(self._vocab_size, activation='softmax')(squeezed)
       
