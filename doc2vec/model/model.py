@@ -2,7 +2,7 @@ from abc import ABCMeta
 import logging
 
 import h5py
-from keras.callbacks import CallBack, EarlyStopping, ModelCheckpoint
+from keras.callbacks import Callback, EarlyStopping, ModelCheckpoint
 from keras.models import load_model
 from keras.optimizers import SGD
 import numpy as np
@@ -65,7 +65,7 @@ class Doc2VecModel(object):
                                              period=save_period))
         if save_doc_embeddings_path and save_doc_embeddings_period:
             callbacks.append(_SaveDocEmbeddings(save_doc_embeddings_path,
-                                                period=save_doc_embeddings_period))
+                                                save_doc_embeddings_period))
 
         history = self._model.fit_generator(
 	    generator,
@@ -89,22 +89,26 @@ class Doc2VecModel(object):
 
 class _SaveDocEmbeddings(Callback):
 
+    def __init__(self, path, period):
+        self.path = path
+        self.period = period
+
     def on_epoch_end(self, epoch, logs=None):
-        if epoch % self.params['period'] != 0:
+        if epoch % self.period != 0:
             return
 
-        path = self.params['path'].format({'epoch': epoch})
+        path = self.path.format(epoch=epoch)
         embeddings = _doc_embeddings_from_model(self.model)
         _write_doc_embeddings(embeddings, path)
 
 
 def _doc_embeddings_from_model(keras_model):
     for layer in keras_model.layers:
-        if layer.get_config()['name'] == _DOC_EMBEDDINGS_LAYER_NAME:
+        if layer.get_config()['name'] == DOC_EMBEDDINGS_LAYER_NAME:
             return layer.get_weights()[0]
 
 
 def _write_doc_embeddings(doc_embeddings, path):
     logger.info('Saving doc embeddings to %s', path)
     with h5py.File(path, 'w') as f:
-        f.create_dataset(_DOC_EMBEDDINGS_LAYER_NAME, data=doc_embeddings)
+        f.create_dataset(DOC_EMBEDDINGS_LAYER_NAME, data=doc_embeddings)

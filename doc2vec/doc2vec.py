@@ -22,38 +22,48 @@ def _parse_args():
                         help='Which model to use')
                         
     parser.add_argument('--save', help='Path to save model')
-    parser.add_argument('--save_period', help='Save model every n epochs')
+    parser.add_argument('--save_period', 
+                        type=int,
+                        help='Save model every n epochs')
     parser.add_argument('--save_vocab', help='Path to save vocab file')
     parser.add_argument('--save_doc_embeddings',
                         help='Path to save doc embeddings file')
     parser.add_argument('--save_doc_embeddings_period',
+                        type=int,
                         help='Save doc embeddings every n epochs')
 
     parser.add_argument('--load', help='Path to load model')
     parser.add_argument('--load_vocab', help='Path to load vocab file')
 
     parser.add_argument('--early_stopping_patience',
+                        type=int,
                         help='Stop after no loss decrease for n epochs')
 
     parser.add_argument('--vocab_size', default=vocab.DEFAULT_SIZE,
+                        type=int,
                         help='Max vocabulary size; ignored if loading from file')
     parser.add_argument('--vocab_rare_threshold',
                         default=vocab.DEFAULT_RARE_THRESHOLD,
+                        type=int,
                         help=('Words less frequent than this threshold '
                               'will be considered unknown'))
 
     parser.add_argument('--window_size',
                         default=model.DEFAULT_WINDOW_SIZE,
+                        type=int,
                         help='Context window size')
     parser.add_argument('--embedding_size',
                         default=model.DEFAULT_EMBEDDING_SIZE,
+                        type=int,
                         help='Word and document embedding size')
 
     parser.add_argument('--num_epochs',
                         default=model.DEFAULT_NUM_EPOCHS,
+                        type=int,
                         help='Number of epochs to train for')
     parser.add_argument('--steps_per_epoch',
                         default=model.DEFAULT_STEPS_PER_EPOCH,
+                        type=int,
                         help='Number of samples per epoch')
 
     group = parser.add_mutually_exclusive_group()
@@ -93,6 +103,8 @@ def main():
         m.build()
         m.compile()
 
+    elapsed_epochs = 0
+
     if args.train:
         all_data = batcher(
                 data_generator(
@@ -107,13 +119,15 @@ def main():
                 early_stopping_patience=args.early_stopping_patience,
                 save_path=args.save,
                 save_period=args.save_period,
-                save_doc_embeddings=args.save_doc_embeddings,
+                save_doc_embeddings_path=args.save_doc_embeddings,
                 save_doc_embeddings_period=args.save_doc_embeddings_period)
+
+        elapsed_epochs = len(history.history['loss'])
 
     if args.save:
         m.save(
-            args.save.format({'epoch': len(history)}))
+            args.save.format(epoch=elapsed_epochs))
 
     if args.save_doc_embeddings:
         m.save_doc_embeddings(
-            args.save_doc_embeddings.format({'epoch': len(history)}))
+            args.save_doc_embeddings.format(epoch=elapsed_epochs))

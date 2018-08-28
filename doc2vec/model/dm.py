@@ -12,10 +12,10 @@ def _split(window_size):
     return _lambda
 
 
-def _squeeze():
+def _squeeze(axis=-1):
     def _lambda(tensor):
         import tensorflow as tf
-        return tf.squeeze(tensor, axis=1)
+        return tf.squeeze(tensor, axis=axis)
     return _lambda
 
 
@@ -36,7 +36,7 @@ class DM(model.Doc2VecModel):
         embedded = Concatenate(axis=1)([embedded_doc, embedded_sequence])
         split = Lambda(_split(self._window_size))(embedded)
         averaged = Average()(split)
-        squeezed = Lambda(_squeeze())(averaged)
+        squeezed = Lambda(_squeeze(axis=1))(averaged)
       
         softmax = Dense(self._vocab_size, activation='softmax')(squeezed)
       

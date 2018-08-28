@@ -16,10 +16,10 @@ def data_generator(token_ids_by_doc_id, window_size, vocab_size):
         if num_tokens <= window_size:
             continue
     
-        target_idx = random.randint((num_tokens - offset) - 1)
+        target_idx = random.randint(0, (num_tokens - window_size) - 1)
         target_id = token_ids[target_idx]
       
-        context_window = token_ids[target_idx:target_idx+offset]
+        context_window = token_ids[target_idx:target_idx+window_size]
     
         yield (doc_id, to_categorical(context_window, num_classes=vocab_size))
 
