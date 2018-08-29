@@ -18,7 +18,7 @@ preprocessing.
 ```
 doc2vec path/to/docs/ \
     --save path/to/save/model.hdf5 \
-    --save_vocab path/to/save/vocab.vocab
+    --save_vocab path/to/save/vocab.vocab \
     --train
 ```
 
@@ -39,7 +39,7 @@ And document embeddings can be written to file as follows:
 ```
 doc2vec path/to/docs/ \
     --load path/to/load/model.hdf5 \
-    --load_vocab path/to/load/vocab.vocab
+    --load_vocab path/to/load/vocab.vocab \
     --save_doc_embeddings path/to/save/embeddings.hdf5
 ```
 
