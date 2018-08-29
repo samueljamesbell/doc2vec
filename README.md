@@ -51,5 +51,5 @@ doc2vec -h
 ## References
 1. Le, Quoc, and Mikolov, Tomas. "Distributed representations of sentences and
    documents." International Conference on Machine Learning. 2014.
-2. Bird, Steven, Loper, Edward and Klein, Ewan. Natural Language
-   Processing with Python. O’Reilly Media Inc. 2009.
+2. Bird, Steven, Loper, Edward and Klein, Ewan. "Natural Language
+   Processing with Python." O’Reilly Media Inc. 2009.
