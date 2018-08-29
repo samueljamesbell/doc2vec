@@ -1,6 +1,6 @@
 # doc2vec
 
-A simple and readable Python 3 implementation of doc2vec [1].
+A simple and readable implementation of doc2vec [1], using Python 3, Keras and TensorFlow.
 
 ## Installation
 ```
