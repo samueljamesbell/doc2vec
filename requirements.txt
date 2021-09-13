@@ -15,7 +15,7 @@ protobuf==3.6.0
 python-dateutil==2.7.3
 python-utils==2.3.0
 pytz==2018.5
-PyYAML==5.1
+PyYAML==5.4
 scipy==1.1.0
 six==1.11.0
 tensorflow==2.5.1
